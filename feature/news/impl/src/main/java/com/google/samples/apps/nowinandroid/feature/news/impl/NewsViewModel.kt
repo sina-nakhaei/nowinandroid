@@ -21,8 +21,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.samples.apps.nowinandroid.core.data.repository.MyNewsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -32,24 +34,33 @@ import javax.inject.Inject
 internal class NewsViewModel @Inject constructor(
     private val repository: MyNewsRepository,
 ) : ViewModel() {
-
+    private val _isRefreshing = MutableStateFlow(false)
     val uiState: StateFlow<NewsUiState> =
-        repository.getNews()
-            .map { news ->
-                NewsUiState(
-                    news = news,
-                    isLoading = false,
-                )
-            }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5_000),
-                initialValue = NewsUiState(),
+        combine(
+            repository.getNews(),
+            _isRefreshing,
+        ) { news, isRefreshing ->
+            NewsUiState(
+                news = news,
+                isLoading = false,
+                isRefreshing = isRefreshing,
             )
-
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5_000),
+            NewsUiState(),
+        )
     fun refresh() {
+        if (uiState.value.isRefreshing) return
+
         viewModelScope.launch {
-            repository.refresh()
+            _isRefreshing.value = true
+
+            try {
+                repository.refresh()
+            } finally {
+                _isRefreshing.value = false
+            }
         }
     }
 }
