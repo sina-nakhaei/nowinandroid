@@ -16,6 +16,7 @@
 
 package com.google.samples.apps.nowinandroid.feature.news.impl
 
+import NewsError
 import NewsUiState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -35,15 +36,18 @@ internal class NewsViewModel @Inject constructor(
     private val repository: MyNewsRepository,
 ) : ViewModel() {
     private val _isRefreshing = MutableStateFlow(false)
+    private val _refreshError = MutableStateFlow<NewsError?>(null)
     val uiState: StateFlow<NewsUiState> =
         combine(
             repository.getNews(),
             _isRefreshing,
-        ) { news, isRefreshing ->
+            _refreshError,
+        ) { news, isRefreshing, error ->
             NewsUiState(
                 news = news,
                 isLoading = false,
                 isRefreshing = isRefreshing,
+                error = error,
             )
         }.stateIn(
             viewModelScope,
@@ -55,9 +59,12 @@ internal class NewsViewModel @Inject constructor(
 
         viewModelScope.launch {
             _isRefreshing.value = true
+            _refreshError.value = null
 
             try {
                 repository.refresh()
+            } catch (e: Exception) {
+                _refreshError.value = NewsError.UNKNOWN
             } finally {
                 _isRefreshing.value = false
             }

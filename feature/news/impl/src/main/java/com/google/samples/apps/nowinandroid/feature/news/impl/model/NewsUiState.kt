@@ -11,6 +11,5 @@ enum class NewsError {
     NETWORK,
     SERVER,
     LOCAL,
-    EMPTY,
     UNKNOWN,
 }
