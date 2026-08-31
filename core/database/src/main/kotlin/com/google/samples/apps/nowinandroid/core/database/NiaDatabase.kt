@@ -20,11 +20,13 @@ import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.google.samples.apps.nowinandroid.core.database.dao.NewsDao
 import com.google.samples.apps.nowinandroid.core.database.dao.NewsResourceDao
 import com.google.samples.apps.nowinandroid.core.database.dao.NewsResourceFtsDao
 import com.google.samples.apps.nowinandroid.core.database.dao.RecentSearchQueryDao
 import com.google.samples.apps.nowinandroid.core.database.dao.TopicDao
 import com.google.samples.apps.nowinandroid.core.database.dao.TopicFtsDao
+import com.google.samples.apps.nowinandroid.core.database.model.NewsEntity
 import com.google.samples.apps.nowinandroid.core.database.model.NewsResourceEntity
 import com.google.samples.apps.nowinandroid.core.database.model.NewsResourceFtsEntity
 import com.google.samples.apps.nowinandroid.core.database.model.NewsResourceTopicCrossRef
@@ -41,6 +43,7 @@ import com.google.samples.apps.nowinandroid.core.database.util.InstantConverter
         TopicEntity::class,
         TopicFtsEntity::class,
         RecentSearchQueryEntity::class,
+        NewsEntity::class
     ],
     version = 14,
     autoMigrations = [
@@ -69,4 +72,6 @@ internal abstract class NiaDatabase : RoomDatabase() {
     abstract fun topicFtsDao(): TopicFtsDao
     abstract fun newsResourceFtsDao(): NewsResourceFtsDao
     abstract fun recentSearchQueryDao(): RecentSearchQueryDao
+
+    abstract fun newsDao(): NewsDao
 }
