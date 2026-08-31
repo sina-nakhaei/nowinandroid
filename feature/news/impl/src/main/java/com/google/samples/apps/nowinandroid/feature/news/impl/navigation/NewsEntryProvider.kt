@@ -4,7 +4,14 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.google.samples.apps.nowinandroid.core.navigation.Navigator
 import com.google.samples.apps.nowinandroid.feature.news.api.NewsNavKey
+import com.google.samples.apps.nowinandroid.feature.news.impl.NewsScreen
 
 fun EntryProviderScope<NavKey>.newsEntry(navigator: Navigator) {
-    entry<NewsNavKey> {}
+    entry<NewsNavKey> {
+        NewsScreen(
+            onNewsClick = { newsId ->
+                // detail navigation later
+            },
+        )
+    }
 }
