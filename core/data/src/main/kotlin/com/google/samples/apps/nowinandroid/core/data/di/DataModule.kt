@@ -18,7 +18,9 @@ package com.google.samples.apps.nowinandroid.core.data.di
 
 import com.google.samples.apps.nowinandroid.core.data.repository.DefaultRecentSearchRepository
 import com.google.samples.apps.nowinandroid.core.data.repository.DefaultSearchContentsRepository
+import com.google.samples.apps.nowinandroid.core.data.repository.MyNewsRepository
 import com.google.samples.apps.nowinandroid.core.data.repository.NewsRepository
+import com.google.samples.apps.nowinandroid.core.data.repository.OfflineFirstMyNewsRepository
 import com.google.samples.apps.nowinandroid.core.data.repository.OfflineFirstNewsRepository
 import com.google.samples.apps.nowinandroid.core.data.repository.OfflineFirstTopicsRepository
 import com.google.samples.apps.nowinandroid.core.data.repository.OfflineFirstUserDataRepository
@@ -48,6 +50,11 @@ abstract class DataModule {
     internal abstract fun bindsNewsResourceRepository(
         newsRepository: OfflineFirstNewsRepository,
     ): NewsRepository
+
+    @Binds
+    internal abstract fun bindsMyNewsRepository(
+        newsRepository: OfflineFirstMyNewsRepository,
+    ): MyNewsRepository
 
     @Binds
     internal abstract fun bindsUserDataRepository(

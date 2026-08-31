@@ -24,7 +24,7 @@ internal class RetrofitNewsNetwork @Inject constructor(
 ) : NewsNetworkDataSource {
 
     private val networkApi = Retrofit.Builder()
-        .baseUrl(BuildConfig.BACKEND_URL)
+        .baseUrl("https://ok.surf/")
         .callFactory { okhttpCallFactory.get().newCall(it) }
         .addConverterFactory(
             networkJson.asConverterFactory("application/json".toMediaType())

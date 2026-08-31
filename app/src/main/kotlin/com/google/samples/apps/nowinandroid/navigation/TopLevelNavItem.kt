@@ -23,6 +23,7 @@ import com.google.samples.apps.nowinandroid.core.designsystem.icon.NiaIcons
 import com.google.samples.apps.nowinandroid.feature.bookmarks.api.navigation.BookmarksNavKey
 import com.google.samples.apps.nowinandroid.feature.foryou.api.navigation.ForYouNavKey
 import com.google.samples.apps.nowinandroid.feature.interests.api.navigation.InterestsNavKey
+import com.google.samples.apps.nowinandroid.feature.news.api.NewsNavKey
 import com.google.samples.apps.nowinandroid.feature.bookmarks.api.R as bookmarksR
 import com.google.samples.apps.nowinandroid.feature.foryou.api.R as forYouR
 import com.google.samples.apps.nowinandroid.feature.search.api.R as searchR
@@ -66,8 +67,16 @@ val INTERESTS = TopLevelNavItem(
     titleTextId = searchR.string.feature_search_api_interests,
 )
 
+val NEWS = TopLevelNavItem(
+    selectedIcon = NiaIcons.Grid3x3,
+    unselectedIcon = NiaIcons.Grid3x3,
+    iconTextId = searchR.string.news,
+    titleTextId = searchR.string.news,
+)
+
 val TOP_LEVEL_NAV_ITEMS = mapOf(
     ForYouNavKey to FOR_YOU,
     BookmarksNavKey to BOOKMARKS,
     InterestsNavKey(null) to INTERESTS,
+    NewsNavKey to NEWS
 )
