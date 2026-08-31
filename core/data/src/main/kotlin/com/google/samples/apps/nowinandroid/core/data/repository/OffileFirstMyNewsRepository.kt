@@ -25,12 +25,11 @@ internal class OfflineFirstMyNewsRepository @Inject constructor(
             .map { it?.asExternalModel() }
 
     override suspend fun refresh() {
-        val networkNews = network.getNewsFeed()
+        val news = network.getNewsFeed()
             .asExternalModels()
+            .map(News::asEntity)
 
-        newsDao.upsertNews(
-            entities = networkNews.map(News::asEntity),
-        )
+        newsDao.replaceNews(news)
     }
 }
 

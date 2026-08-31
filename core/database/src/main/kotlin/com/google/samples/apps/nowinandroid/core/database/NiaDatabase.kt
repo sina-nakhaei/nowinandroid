@@ -34,6 +34,7 @@ import com.google.samples.apps.nowinandroid.core.database.model.RecentSearchQuer
 import com.google.samples.apps.nowinandroid.core.database.model.TopicEntity
 import com.google.samples.apps.nowinandroid.core.database.model.TopicFtsEntity
 import com.google.samples.apps.nowinandroid.core.database.util.InstantConverter
+import com.google.samples.apps.nowinandroid.core.database.util.NewsConverter
 
 @Database(
     entities = [
@@ -65,6 +66,7 @@ import com.google.samples.apps.nowinandroid.core.database.util.InstantConverter
 )
 @TypeConverters(
     InstantConverter::class,
+    NewsConverter::class
 )
 internal abstract class NiaDatabase : RoomDatabase() {
     abstract fun topicDao(): TopicDao
