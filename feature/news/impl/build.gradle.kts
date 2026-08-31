@@ -1,30 +1,18 @@
 plugins {
-    alias(libs.plugins.android.library)
+    alias(libs.plugins.nowinandroid.android.feature.impl)
+    alias(libs.plugins.nowinandroid.android.library.compose)
 }
 
 android {
     namespace = "com.google.samples.apps.nowinandroid.feature.news.impl"
-    compileSdk {
-        version = release(36)
-    }
-
-    defaultConfig {
-        minSdk = 24
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-
 }
 
 dependencies {
-    implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.material)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.test.espresso.core)
+    implementation(projects.core.data)
+    implementation(projects.feature.news.api)
+
+    testImplementation(projects.core.testing)
+
+    androidTestImplementation(libs.bundles.androidx.compose.ui.test)
+    androidTestImplementation(projects.core.testing)
 }
