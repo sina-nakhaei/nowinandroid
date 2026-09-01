@@ -21,9 +21,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 internal fun NewsDetailScreen(
+    newsId: String,
     modifier: Modifier = Modifier,
 ) {
-    val viewModel: NewsDetailViewModel = hiltViewModel()
+    val viewModel = hiltViewModel<NewsDetailViewModel, NewsDetailViewModel.Factory>(
+        creationCallback = { factory ->
+            factory.create(newsId)
+        },
+    )
     val news by viewModel.news.collectAsStateWithLifecycle()
 
     news?.let { item ->

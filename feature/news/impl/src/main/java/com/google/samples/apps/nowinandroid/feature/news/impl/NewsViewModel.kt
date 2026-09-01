@@ -61,7 +61,7 @@ internal class NewsViewModel @Inject constructor(
             NewsUiState(),
         )
     fun refresh() {
-        if (uiState.value.isRefreshing) return
+        if (_isRefreshing.value) return
 
         viewModelScope.launch {
             _isRefreshing.value = true

@@ -11,11 +11,13 @@ import com.google.samples.apps.nowinandroid.feature.news.impl.NewsScreen
 fun EntryProviderScope<NavKey>.newsEntry(navigator: Navigator) {
     entry<NewsNavKey> {
         NewsScreen(
-            onNewsClick = { newsId -> },
+            onNewsClick = { newsId ->
+                navigator.navigate(NewsDetailNavKey(newsId))
+            },
         )
     }
 
     entry<NewsDetailNavKey> { key ->
-        NewsDetailScreen()
+        NewsDetailScreen(key.newsId)
     }
 }
