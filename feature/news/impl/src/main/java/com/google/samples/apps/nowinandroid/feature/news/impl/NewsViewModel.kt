@@ -36,12 +36,13 @@ internal class NewsViewModel @Inject constructor(
     private val repository: MyNewsRepository,
 ) : ViewModel() {
     private val _isRefreshing = MutableStateFlow(false)
+    private val _hasRefreshError = MutableStateFlow(false)
     private val _refreshError = MutableStateFlow<NewsError?>(null)
 
     init {
         refresh()
     }
-    
+
     val uiState: StateFlow<NewsUiState> =
         combine(
             repository.getNews(),
@@ -64,14 +65,14 @@ internal class NewsViewModel @Inject constructor(
 
         viewModelScope.launch {
             _isRefreshing.value = true
-            _refreshError.value = null
+            _hasRefreshError.value = false
 
             try {
                 repository.refresh()
             } catch (e: Exception) {
-                _refreshError.value = NewsError.UNKNOWN
+                _hasRefreshError.value = true
             } finally {
-                _isRefreshing.value = false
+                _hasRefreshError.value = false
             }
         }
     }

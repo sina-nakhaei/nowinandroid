@@ -64,6 +64,10 @@ private fun NewsContent(
                 CircularProgressIndicator()
             }
 
+            uiState.news.isEmpty() && uiState.hasRefreshError -> {
+                Text("empty and has refresh error")
+            }
+
             uiState.news.isEmpty() -> {
                 Text("No news")
             }
