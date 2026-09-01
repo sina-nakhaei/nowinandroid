@@ -17,18 +17,27 @@
 package com.google.samples.apps.nowinandroid.feature.news.impl
 
 import NewsUiState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.samples.apps.nowinandroid.core.model.data.News
@@ -61,7 +70,7 @@ private fun NewsContent(
     PullToRefreshBox(
         isRefreshing = uiState.isRefreshing,
         onRefresh = onRefresh,
-        modifier = modifier,
+        modifier = modifier.fillMaxSize(),
     ) {
         Column {
             Button(
@@ -105,13 +114,23 @@ private fun NewsItem(
     news: News,
     onClick: () -> Unit,
 ) {
-    ListItem(
-        headlineContent = {
-            Text(news.title)
-        },
-        supportingContent = {
-            Text(news.source)
-        },
-        modifier = Modifier.clickable(onClick = onClick),
-    )
+    Column(
+        modifier = Modifier
+            .padding(12.dp)
+            .clip(RoundedCornerShape(32.dp))
+            .background(Color.White)
+            .clickable { onClick() }
+            .fillMaxWidth()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp)
+    ) {
+        Text(
+            text = news.title,
+            fontWeight = FontWeight.ExtraBold
+        )
+        Text(
+            text = news.source,
+            color = Color(0xFFA8A8A8)
+        )
+    }
 }
