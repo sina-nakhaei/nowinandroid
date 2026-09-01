@@ -24,6 +24,7 @@ import coil.util.DebugLogger
 import com.google.samples.apps.nowinandroid.core.network.BuildConfig
 import com.google.samples.apps.nowinandroid.core.network.demo.DemoAssetManager
 import com.google.samples.apps.nowinandroid.core.network.interceptor.ErrorHandlingInterceptor
+import com.google.samples.apps.nowinandroid.core.network.interceptor.NetworkConnectionInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -54,9 +55,11 @@ internal object NetworkModule {
     @Provides
     @Singleton
     fun okHttpCallFactory(
-        errorHandlingInterceptor: ErrorHandlingInterceptor
+        errorHandlingInterceptor: ErrorHandlingInterceptor,
+        @ApplicationContext context: Context
     ): Call.Factory = trace("NiaOkHttpClient") {
         OkHttpClient.Builder()
+            .addInterceptor(NetworkConnectionInterceptor(context))
             .addInterceptor(errorHandlingInterceptor)
             .addInterceptor(
                 HttpLoggingInterceptor()
