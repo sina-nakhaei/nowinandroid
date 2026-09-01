@@ -37,6 +37,11 @@ internal class NewsViewModel @Inject constructor(
 ) : ViewModel() {
     private val _isRefreshing = MutableStateFlow(false)
     private val _refreshError = MutableStateFlow<NewsError?>(null)
+
+    init {
+        refresh()
+    }
+    
     val uiState: StateFlow<NewsUiState> =
         combine(
             repository.getNews(),
