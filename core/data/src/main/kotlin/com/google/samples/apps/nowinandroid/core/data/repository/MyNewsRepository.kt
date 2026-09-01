@@ -1,6 +1,7 @@
 package com.google.samples.apps.nowinandroid.core.data.repository
 
 import com.google.samples.apps.nowinandroid.core.model.data.News
+import com.google.samples.apps.nowinandroid.core.network.model.Result
 import kotlinx.coroutines.flow.Flow
 
 interface MyNewsRepository {
@@ -8,7 +9,7 @@ interface MyNewsRepository {
 
     fun getNews(id: String): Flow<News?>
 
-    suspend fun refresh()
+    fun refresh(): Flow<Result<Unit>>
 
     suspend fun deleteAll()
 }

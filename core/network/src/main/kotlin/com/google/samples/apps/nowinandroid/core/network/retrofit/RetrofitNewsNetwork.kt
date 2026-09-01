@@ -1,8 +1,11 @@
 package com.google.samples.apps.nowinandroid.core.network.retrofit
 
-import com.google.samples.apps.nowinandroid.core.network.BuildConfig
 import com.google.samples.apps.nowinandroid.core.network.NewsNetworkDataSource
 import com.google.samples.apps.nowinandroid.core.network.model.NetworkNewsFeed
+import com.google.samples.apps.nowinandroid.core.network.model.Result
+import com.google.samples.apps.nowinandroid.core.network.model.apiCall
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.Call
 import okhttp3.MediaType.Companion.toMediaType
@@ -27,11 +30,14 @@ internal class RetrofitNewsNetwork @Inject constructor(
         .baseUrl("https://ok.surf/")
         .callFactory { okhttpCallFactory.get().newCall(it) }
         .addConverterFactory(
-            networkJson.asConverterFactory("application/json".toMediaType())
+            networkJson.asConverterFactory("application/json".toMediaType()),
         )
         .build()
         .create(RetrofitNewsApi::class.java)
 
-    override suspend fun getNewsFeed(): NetworkNewsFeed =
-        networkApi.getNewsFeed()
+    override suspend fun getNewsFeed(): Result<NetworkNewsFeed> = withContext(Dispatchers.IO) {
+        apiCall {
+            networkApi.getNewsFeed()
+        }
+    }
 }

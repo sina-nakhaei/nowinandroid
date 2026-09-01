@@ -4,12 +4,5 @@ data class NewsUiState(
     val news: List<News> = emptyList(),
     val isRefreshing: Boolean = false,
     val hasRefreshError : Boolean = false,
-    val error: NewsError? = null,
+    val error: String? = null,
 )
-
-enum class NewsError {
-    NETWORK,
-    SERVER,
-    LOCAL,
-    UNKNOWN,
-}

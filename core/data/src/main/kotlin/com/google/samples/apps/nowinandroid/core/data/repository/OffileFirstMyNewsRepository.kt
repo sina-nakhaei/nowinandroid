@@ -6,8 +6,13 @@ import com.google.samples.apps.nowinandroid.core.database.model.asEntity
 import com.google.samples.apps.nowinandroid.core.database.model.asExternalModel
 import com.google.samples.apps.nowinandroid.core.model.data.News
 import com.google.samples.apps.nowinandroid.core.network.NewsNetworkDataSource
+import com.google.samples.apps.nowinandroid.core.network.model.Result
 import com.google.samples.apps.nowinandroid.core.network.model.asExternalModels
+import com.google.samples.apps.nowinandroid.core.network.model.doOnEachState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -24,13 +29,26 @@ internal class OfflineFirstMyNewsRepository @Inject constructor(
         newsDao.getNewsEntity(id)
             .map { it?.asExternalModel() }
 
-    override suspend fun refresh() {
-        val news = network.getNewsFeed()
-            .asExternalModels()
-            .map(News::asEntity)
-
-        newsDao.replaceNews(news)
-    }
+    override fun refresh(): Flow<Result<Unit>> = flow {
+        emit(Result.Loading)
+        network
+            .getNewsFeed()
+            .doOnEachState(
+                onSuccess = { result ->
+                    emit(Result.Success(null))
+                    result.data?.let { data ->
+                        newsDao.replaceNews(
+                            data
+                                .asExternalModels()
+                                .map(News::asEntity),
+                            )
+                    }
+                },
+                onError = {
+                    emit(it)
+                },
+            )
+    }.flowOn(Dispatchers.IO)
 
     override suspend fun deleteAll() {
         newsDao.deleteAll()
