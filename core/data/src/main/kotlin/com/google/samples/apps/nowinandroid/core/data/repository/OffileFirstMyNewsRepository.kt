@@ -31,5 +31,9 @@ internal class OfflineFirstMyNewsRepository @Inject constructor(
 
         newsDao.replaceNews(news)
     }
+
+    override suspend fun deleteAll() {
+        newsDao.deleteAll()
+    }
 }
 

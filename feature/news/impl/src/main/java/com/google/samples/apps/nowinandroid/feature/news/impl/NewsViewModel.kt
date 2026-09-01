@@ -18,15 +18,17 @@ package com.google.samples.apps.nowinandroid.feature.news.impl
 
 import NewsError
 import NewsUiState
+import androidx.compose.runtime.DisposableEffect
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.samples.apps.nowinandroid.core.common.network.Dispatcher
 import com.google.samples.apps.nowinandroid.core.data.repository.MyNewsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -35,13 +37,9 @@ import javax.inject.Inject
 internal class NewsViewModel @Inject constructor(
     private val repository: MyNewsRepository,
 ) : ViewModel() {
-    private val _isRefreshing = MutableStateFlow(false)
-    private val _hasRefreshError = MutableStateFlow(false)
-    private val _refreshError = MutableStateFlow<NewsError?>(null)
 
-    init {
-        refresh()
-    }
+    private val _isRefreshing = MutableStateFlow(false)
+    private val _refreshError = MutableStateFlow<NewsError?>(null)
 
     val uiState: StateFlow<NewsUiState> =
         combine(
@@ -51,7 +49,7 @@ internal class NewsViewModel @Inject constructor(
         ) { news, isRefreshing, error ->
             NewsUiState(
                 news = news,
-                isLoading = false,
+                isLoading = news.isEmpty() && !isRefreshing && error == null,
                 isRefreshing = isRefreshing,
                 error = error,
             )
@@ -60,20 +58,31 @@ internal class NewsViewModel @Inject constructor(
             SharingStarted.WhileSubscribed(5_000),
             NewsUiState(),
         )
+
+    init {
+        refresh()
+    }
+
     fun refresh() {
         if (_isRefreshing.value) return
 
         viewModelScope.launch {
             _isRefreshing.value = true
-            _hasRefreshError.value = false
+            _refreshError.value = null
 
             try {
                 repository.refresh()
             } catch (e: Exception) {
-                _hasRefreshError.value = true
+                _refreshError.value = NewsError.UNKNOWN
             } finally {
-                _hasRefreshError.value = false
+                _isRefreshing.value = false
             }
+        }
+    }
+
+    fun deleteAll() {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.deleteAll()
         }
     }
 }

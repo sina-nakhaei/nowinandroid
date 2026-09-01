@@ -9,4 +9,6 @@ interface MyNewsRepository {
     fun getNews(id: String): Flow<News?>
 
     suspend fun refresh()
+
+    suspend fun deleteAll()
 }

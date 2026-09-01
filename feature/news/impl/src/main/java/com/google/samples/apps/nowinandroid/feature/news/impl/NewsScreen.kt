@@ -18,8 +18,10 @@ package com.google.samples.apps.nowinandroid.feature.news.impl
 
 import NewsUiState
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
@@ -44,6 +46,7 @@ internal fun NewsScreen(
         onNewsClick = onNewsClick,
         onRefresh = viewModel::refresh,
         modifier = modifier,
+        onDeleteAll = viewModel::deleteAll,
     )
 }
 
@@ -52,6 +55,7 @@ private fun NewsContent(
     uiState: NewsUiState,
     onNewsClick: (String) -> Unit,
     onRefresh: () -> Unit,
+    onDeleteAll: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     PullToRefreshBox(
@@ -59,29 +63,36 @@ private fun NewsContent(
         onRefresh = onRefresh,
         modifier = modifier,
     ) {
-        when {
-            uiState.isLoading -> {
-                CircularProgressIndicator()
+        Column {
+            Button(
+                onClick = onDeleteAll,
+            ) {
+                Text("delete all")
             }
+            when {
+                uiState.isLoading -> {
+                    CircularProgressIndicator()
+                }
 
-            uiState.news.isEmpty() && uiState.hasRefreshError -> {
-                Text("empty and has refresh error")
-            }
+                uiState.news.isEmpty() && uiState.hasRefreshError -> {
+                    Text("empty and has refresh error")
+                }
 
-            uiState.news.isEmpty() -> {
-                Text("No news")
-            }
+                uiState.news.isEmpty() -> {
+                    Text("No news")
+                }
 
-            else -> {
-                LazyColumn {
-                    items(
-                        items = uiState.news,
-                        key = { it.id },
-                    ) { news ->
-                        NewsItem(
-                            news = news,
-                            onClick = { onNewsClick(news.id) },
-                        )
+                else -> {
+                    LazyColumn {
+                        items(
+                            items = uiState.news,
+                            key = { it.id },
+                        ) { news ->
+                            NewsItem(
+                                news = news,
+                                onClick = { onNewsClick(news.id) },
+                            )
+                        }
                     }
                 }
             }
