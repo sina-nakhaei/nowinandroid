@@ -18,10 +18,8 @@ package com.google.samples.apps.nowinandroid.feature.news.impl
 
 import NewsError
 import NewsUiState
-import androidx.compose.runtime.DisposableEffect
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.samples.apps.nowinandroid.core.common.network.Dispatcher
 import com.google.samples.apps.nowinandroid.core.data.repository.MyNewsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -38,18 +36,21 @@ internal class NewsViewModel @Inject constructor(
     private val repository: MyNewsRepository,
 ) : ViewModel() {
 
-    private val _isRefreshing = MutableStateFlow(false)
-    private val _refreshError = MutableStateFlow<NewsError?>(null)
+    private val refreshing = MutableStateFlow(false)
+    private val error = MutableStateFlow<NewsError?>(null)
+
+    init {
+        refresh()
+    }
 
     val uiState: StateFlow<NewsUiState> =
         combine(
             repository.getNews(),
-            _isRefreshing,
-            _refreshError,
+            refreshing,
+            error,
         ) { news, isRefreshing, error ->
             NewsUiState(
                 news = news,
-                isLoading = news.isEmpty() && !isRefreshing && error == null,
                 isRefreshing = isRefreshing,
                 error = error,
             )
@@ -59,23 +60,19 @@ internal class NewsViewModel @Inject constructor(
             NewsUiState(),
         )
 
-    init {
-        refresh()
-    }
-
     fun refresh() {
-        if (_isRefreshing.value) return
+        if (refreshing.value) return
 
         viewModelScope.launch {
-            _isRefreshing.value = true
-            _refreshError.value = null
+            refreshing.value = true
+            error.value = null
 
             try {
                 repository.refresh()
             } catch (e: Exception) {
-                _refreshError.value = NewsError.UNKNOWN
+                error.value = NewsError.UNKNOWN
             } finally {
-                _isRefreshing.value = false
+                refreshing.value = false
             }
         }
     }

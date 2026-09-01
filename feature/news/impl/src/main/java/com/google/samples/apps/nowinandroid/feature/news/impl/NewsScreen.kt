@@ -19,24 +19,32 @@ package com.google.samples.apps.nowinandroid.feature.news.impl
 import NewsUiState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -54,8 +62,8 @@ internal fun NewsScreen(
         uiState = uiState,
         onNewsClick = onNewsClick,
         onRefresh = viewModel::refresh,
-        modifier = modifier,
         onDeleteAll = viewModel::deleteAll,
+        modifier = modifier,
     )
 }
 
@@ -72,36 +80,50 @@ private fun NewsContent(
         onRefresh = onRefresh,
         modifier = modifier.fillMaxSize(),
     ) {
-        Column {
-            Button(
-                onClick = onDeleteAll,
-            ) {
-                Text("delete all")
+        when {
+            uiState.news.isEmpty() -> {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                ) {
+                    item {
+                        Text(
+                            textAlign = TextAlign.Center,
+                            text =  if(uiState.isRefreshing) {
+                                "We are fetching news please wait..."
+                            }
+                            else if (uiState.hasRefreshError) {
+                                "Something went wrong\n Pull to Refresh news"
+                            } else {
+                                "No news\n Pull to Refresh news"
+                            },
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             }
-            when {
-                uiState.isLoading -> {
-                    CircularProgressIndicator()
-                }
 
-                uiState.news.isEmpty() && uiState.hasRefreshError -> {
-                    Text("empty and has refresh error")
-                }
-
-                uiState.news.isEmpty() -> {
-                    Text("No news")
-                }
-
-                else -> {
-                    LazyColumn {
-                        items(
-                            items = uiState.news,
-                            key = { it.id },
-                        ) { news ->
-                            NewsItem(
-                                news = news,
-                                onClick = { onNewsClick(news.id) },
-                            )
+            else -> {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    item {
+                        Button(
+                            onClick = onDeleteAll,
+                        ) {
+                            Text("Delete All")
                         }
+                    }
+
+                    items(
+                        items = uiState.news,
+                        key = { it.id },
+                    ) { news ->
+                        NewsItem(
+                            news = news,
+                            onClick = { onNewsClick(news.id) },
+                        )
                     }
                 }
             }
@@ -116,21 +138,22 @@ private fun NewsItem(
 ) {
     Column(
         modifier = Modifier
+            .fillMaxWidth()
             .padding(12.dp)
             .clip(RoundedCornerShape(32.dp))
             .background(Color.White)
-            .clickable { onClick() }
-            .fillMaxWidth()
+            .clickable(onClick = onClick)
             .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(18.dp)
+        verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         Text(
             text = news.title,
-            fontWeight = FontWeight.ExtraBold
+            fontWeight = FontWeight.ExtraBold,
         )
+
         Text(
             text = news.source,
-            color = Color(0xFFA8A8A8)
+            color = Color(0xFFA8A8A8),
         )
     }
 }
