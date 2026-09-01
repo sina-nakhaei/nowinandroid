@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.samples.apps.nowinandroid.core.model.data.News
+import com.google.samples.apps.nowinandroid.core.ui.util.shimmer
 
 @Composable
 internal fun NewsScreen(
@@ -88,18 +89,20 @@ private fun NewsContent(
                     verticalArrangement = Arrangement.Center,
                 ) {
                     item {
-                        Text(
-                            textAlign = TextAlign.Center,
-                            text =  if(uiState.isRefreshing) {
-                                "We are fetching news please wait..."
-                            }
-                            else if (uiState.hasRefreshError) {
-                                "Something went wrong\n Pull to Refresh news"
-                            } else {
-                                "No news\n Pull to Refresh news"
-                            },
-                            fontWeight = FontWeight.Bold
-                        )
+
+                        if (uiState.isRefreshing) {
+                            SheetLoading()
+                        } else {
+                            Text(
+                                textAlign = TextAlign.Center,
+                                text = if (uiState.hasRefreshError) {
+                                    "Something went wrong\n Pull to Refresh news"
+                                } else {
+                                    "No news\n Pull to Refresh news"
+                                },
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
                     }
                 }
             }
@@ -155,5 +158,28 @@ private fun NewsItem(
             text = news.source,
             color = Color(0xFFA8A8A8),
         )
+    }
+}
+
+@Composable
+private fun SheetLoading() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(
+            space = 24.dp,
+            alignment = Alignment.CenterVertically,
+        ),
+    ) {
+        repeat(20) {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(32.dp))
+                    .shimmer()
+                    .fillMaxWidth()
+                    .padding(52.dp),
+            ) { }
+        }
     }
 }
