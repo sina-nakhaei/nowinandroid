@@ -1,5 +1,7 @@
 package com.google.samples.apps.nowinandroid.core.data.repository
 
+import com.google.samples.apps.nowinandroid.core.common.network.Dispatcher
+import com.google.samples.apps.nowinandroid.core.common.network.NiaDispatchers
 import com.google.samples.apps.nowinandroid.core.database.dao.NewsDao
 import com.google.samples.apps.nowinandroid.core.database.model.NewsEntity
 import com.google.samples.apps.nowinandroid.core.database.model.asEntity
@@ -9,6 +11,7 @@ import com.google.samples.apps.nowinandroid.core.network.NewsNetworkDataSource
 import com.google.samples.apps.nowinandroid.core.network.model.Result
 import com.google.samples.apps.nowinandroid.core.network.model.asExternalModels
 import com.google.samples.apps.nowinandroid.core.network.model.doOnEachState
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -20,17 +23,18 @@ import javax.inject.Inject
 internal class OfflineFirstMyNewsRepository @Inject constructor(
     private val newsDao: NewsDao,
     private val network: NewsNetworkDataSource,
+    @Dispatcher(NiaDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
 ) : MyNewsRepository {
 
     override fun getNews(): Flow<List<News>> =
         newsDao.getNewsEntities()
             .map { it.map(NewsEntity::asExternalModel) }
-            .flowOn(Dispatchers.IO)
+            .flowOn(ioDispatcher)
 
     override fun getNews(id: String): Flow<News?> =
         newsDao.getNewsEntity(id)
             .map { it?.asExternalModel() }
-            .flowOn(Dispatchers.IO)
+            .flowOn(ioDispatcher)
 
     override fun refresh(): Flow<Result<Unit>> = flow {
         emit(Result.Loading)
@@ -51,10 +55,10 @@ internal class OfflineFirstMyNewsRepository @Inject constructor(
                     emit(it)
                 },
             )
-    }.flowOn(Dispatchers.IO)
+    }.flowOn(ioDispatcher)
 
     override suspend fun deleteAll() {
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             newsDao.deleteAll()
         }
     }
