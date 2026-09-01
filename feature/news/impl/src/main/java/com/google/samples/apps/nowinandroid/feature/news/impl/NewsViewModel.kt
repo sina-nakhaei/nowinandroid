@@ -63,4 +63,8 @@ internal class NewsViewModel @Inject constructor(
             repository.deleteAll()
         }
     }
+
+    fun dismissError() {
+        error.value = null
+    }
 }

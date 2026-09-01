@@ -74,7 +74,7 @@ import com.google.samples.apps.nowinandroid.core.designsystem.theme.GradientColo
 import com.google.samples.apps.nowinandroid.core.designsystem.theme.LocalGradientColors
 import com.google.samples.apps.nowinandroid.core.navigation.Navigator
 import com.google.samples.apps.nowinandroid.core.navigation.toEntries
-import com.google.samples.apps.nowinandroid.feature.bookmarks.impl.navigation.LocalSnackbarHostState
+import com.google.samples.apps.nowinandroid.core.ui.util.LocalSnackbarHostState
 import com.google.samples.apps.nowinandroid.feature.bookmarks.impl.navigation.bookmarksEntry
 import com.google.samples.apps.nowinandroid.feature.foryou.api.navigation.ForYouNavKey
 import com.google.samples.apps.nowinandroid.feature.foryou.impl.navigation.forYouEntry

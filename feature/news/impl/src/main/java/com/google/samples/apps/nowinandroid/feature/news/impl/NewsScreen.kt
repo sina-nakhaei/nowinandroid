@@ -36,6 +36,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,11 +55,20 @@ import com.google.samples.apps.nowinandroid.core.ui.util.shimmer
 @Composable
 internal fun NewsScreen(
     onNewsClick: (String) -> Unit,
+    onShowSnackbar: suspend (String) -> Boolean,
     modifier: Modifier = Modifier,
 ) {
     val viewModel: NewsViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    LaunchedEffect(uiState.error) {
+        uiState.error?.let {
+            val snackbarResult = onShowSnackbar(it)
 
+            if (snackbarResult) {
+                viewModel.dismissError()
+            }
+        }
+    }
     NewsContent(
         uiState = uiState,
         onNewsClick = onNewsClick,
