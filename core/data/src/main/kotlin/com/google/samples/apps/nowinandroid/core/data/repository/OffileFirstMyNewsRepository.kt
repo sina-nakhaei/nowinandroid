@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 internal class OfflineFirstMyNewsRepository @Inject constructor(
@@ -24,10 +25,12 @@ internal class OfflineFirstMyNewsRepository @Inject constructor(
     override fun getNews(): Flow<List<News>> =
         newsDao.getNewsEntities()
             .map { it.map(NewsEntity::asExternalModel) }
+            .flowOn(Dispatchers.IO)
 
     override fun getNews(id: String): Flow<News?> =
         newsDao.getNewsEntity(id)
             .map { it?.asExternalModel() }
+            .flowOn(Dispatchers.IO)
 
     override fun refresh(): Flow<Result<Unit>> = flow {
         emit(Result.Loading)
@@ -51,7 +54,9 @@ internal class OfflineFirstMyNewsRepository @Inject constructor(
     }.flowOn(Dispatchers.IO)
 
     override suspend fun deleteAll() {
-        newsDao.deleteAll()
+        withContext(Dispatchers.IO) {
+            newsDao.deleteAll()
+        }
     }
 }
 

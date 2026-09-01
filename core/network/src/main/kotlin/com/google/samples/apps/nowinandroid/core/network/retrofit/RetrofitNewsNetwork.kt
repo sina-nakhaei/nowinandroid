@@ -35,9 +35,8 @@ internal class RetrofitNewsNetwork @Inject constructor(
         .build()
         .create(RetrofitNewsApi::class.java)
 
-    override suspend fun getNewsFeed(): Result<NetworkNewsFeed> = withContext(Dispatchers.IO) {
+    override suspend fun getNewsFeed(): Result<NetworkNewsFeed> =
         apiCall {
             networkApi.getNewsFeed()
         }
-    }
 }
