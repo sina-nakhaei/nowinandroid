@@ -121,14 +121,6 @@ private fun NewsContent(
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                 ) {
-                    item {
-                        Button(
-                            onClick = onDeleteAll,
-                        ) {
-                            Text("Delete All")
-                        }
-                    }
-
                     items(
                         items = uiState.news,
                         key = { it.id },
