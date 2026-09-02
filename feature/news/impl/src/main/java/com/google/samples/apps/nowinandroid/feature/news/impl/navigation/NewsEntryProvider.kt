@@ -27,7 +27,9 @@ fun EntryProviderScope<NavKey>.newsEntry(navigator: Navigator) {
             },
         )
     }
+}
 
+fun EntryProviderScope<NavKey>.newsDetailEntry(navigator: Navigator) {
     entry<NewsDetailNavKey> { key ->
         NewsDetailScreen(key.newsId)
     }

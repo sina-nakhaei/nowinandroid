@@ -16,6 +16,11 @@
 
 package com.google.samples.apps.nowinandroid.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -37,6 +42,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration.Indefinite
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
@@ -67,6 +73,7 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.google.samples.apps.nowinandroid.R
+import com.google.samples.apps.nowinandroid.R.string
 import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaBackground
 import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaGradientBackground
 import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaNavigationSuiteScaffold
@@ -81,6 +88,7 @@ import com.google.samples.apps.nowinandroid.feature.bookmarks.impl.navigation.bo
 import com.google.samples.apps.nowinandroid.feature.foryou.api.navigation.ForYouNavKey
 import com.google.samples.apps.nowinandroid.feature.foryou.impl.navigation.forYouEntry
 import com.google.samples.apps.nowinandroid.feature.interests.impl.navigation.interestsEntry
+import com.google.samples.apps.nowinandroid.feature.news.impl.navigation.newsDetailEntry
 import com.google.samples.apps.nowinandroid.feature.news.impl.navigation.newsEntry
 import com.google.samples.apps.nowinandroid.feature.search.api.navigation.SearchNavKey
 import com.google.samples.apps.nowinandroid.feature.search.impl.navigation.searchEntry
@@ -111,7 +119,7 @@ fun NiaApp(
             val isOffline by appState.isOffline.collectAsStateWithLifecycle()
 
             // If user is not connected to the internet show a snack bar to inform them.
-            val notConnectedMessage = stringResource(R.string.not_connected)
+            val notConnectedMessage = stringResource(string.not_connected)
             LaunchedEffect(isOffline) {
                 if (isOffline) {
                     snackbarHostState.showSnackbar(
@@ -149,18 +157,73 @@ internal fun NiaApp(
     modifier: Modifier = Modifier,
     windowAdaptiveInfo: WindowAdaptiveInfo = currentWindowAdaptiveInfo(),
 ) {
-    val unreadNavKeys by appState.topLevelNavKeysWithUnreadResources
-        .collectAsStateWithLifecycle()
-
     if (showSettingsDialog) {
         SettingsDialog(
             onDismiss = { onSettingsDismissed() },
         )
     }
 
-    val snackbarHostState = LocalSnackbarHostState.current
-
     val navigator = remember { Navigator(appState.navigationState) }
+    val currentKey = appState.navigationState.currentKey
+    val isTopLevel = currentKey in appState.navigationState.topLevelKeys
+
+    val entryProvider = remember(navigator) {
+        entryProvider {
+            forYouEntry(navigator)
+            bookmarksEntry(navigator)
+            interestsEntry(navigator)
+            topicEntry(navigator)
+            searchEntry(navigator)
+            newsEntry(navigator)
+            newsDetailEntry(navigator)
+        }
+    }
+
+    Box(modifier = modifier.fillMaxSize()) {
+        AnimatedVisibility(
+            visible = isTopLevel,
+            enter = fadeIn(),
+            exit = fadeOut(),
+        ) {
+            TopLevelScaffoldContainer(
+                appState = appState,
+                navigator = navigator,
+                windowAdaptiveInfo = windowAdaptiveInfo,
+                onTopAppBarActionClick = onTopAppBarActionClick,
+            ) {
+                NavDisplay(
+                    entries = appState.navigationState.toEntries(entryProvider),
+                    onBack = { navigator.goBack() },
+                )
+            }
+        }
+
+        AnimatedVisibility(
+            visible = !isTopLevel,
+            enter = fadeIn(),
+            exit = fadeOut(),
+        ) {
+            if (!isTopLevel) {
+                NavDisplay(
+                    entries = appState.navigationState.toEntries(entryProvider),
+                    onBack = { navigator.goBack() },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TopLevelScaffoldContainer(
+    appState: NiaAppState,
+    navigator: Navigator,
+    windowAdaptiveInfo: WindowAdaptiveInfo,
+    onTopAppBarActionClick: () -> Unit,
+    content: @Composable () -> Unit,
+) {
+    val unreadNavKeys by appState.topLevelNavKeysWithUnreadResources
+        .collectAsStateWithLifecycle()
+    val snackbarHostState = LocalSnackbarHostState.current
 
     NiaNavigationSuiteScaffold(
         navigationSuiteItems = {
@@ -170,68 +233,28 @@ internal fun NiaApp(
                 item(
                     selected = selected,
                     onClick = { navigator.navigate(navKey) },
-                    icon = {
-                        Icon(
-                            imageVector = navItem.unselectedIcon,
-                            contentDescription = null,
-                        )
-                    },
-                    selectedIcon = {
-                        Icon(
-                            imageVector = navItem.selectedIcon,
-                            contentDescription = null,
-                        )
-                    },
+                    icon = { Icon(navItem.unselectedIcon, contentDescription = null) },
+                    selectedIcon = { Icon(navItem.selectedIcon, contentDescription = null) },
                     label = { Text(stringResource(navItem.iconTextId)) },
-                    modifier = Modifier
-                        .testTag("NiaNavItem")
-                        .then(if (hasUnread) Modifier.notificationDot() else Modifier),
+                    modifier = Modifier.then(if (hasUnread) Modifier.notificationDot() else Modifier),
                 )
             }
         },
         windowAdaptiveInfo = windowAdaptiveInfo,
     ) {
         Scaffold(
-            modifier = modifier.semantics {
-                testTagsAsResourceId = true
-            },
             containerColor = Color.Transparent,
             contentColor = MaterialTheme.colorScheme.onBackground,
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
-            snackbarHost = {
-                SnackbarHost(
-                    snackbarHostState,
-                    modifier = Modifier.windowInsetsPadding(
-                        WindowInsets.safeDrawing.exclude(
-                            WindowInsets.ime,
-                        ),
-                    ),
-                )
-            },
+            snackbarHost = { SnackbarHost(snackbarHostState) },
         ) { padding ->
             Column(
                 Modifier
                     .fillMaxSize()
-                    .padding(padding)
-                    .consumeWindowInsets(padding)
-                    .windowInsetsPadding(
-                        WindowInsets.safeDrawing.only(
-                            WindowInsetsSides.Horizontal,
-                        )
-                    )
-                    .windowInsetsPadding(WindowInsets.ime.exclude(WindowInsets.navigationBars).exclude(
-                        WindowInsets.systemBars),
-                    ),
+                    .padding(padding),
             ) {
-                // Only show the top app bar on top level destinations.
-                var shouldShowTopAppBar = false
-
-                if (appState.navigationState.currentKey in appState.navigationState.topLevelKeys) {
-                    shouldShowTopAppBar = true
-
-                    val destination = TOP_LEVEL_NAV_ITEMS[appState.navigationState.currentTopLevelKey]
-                        ?: error("Top level nav item not found for ${appState.navigationState.currentTopLevelKey}")
-
+                val destination = TOP_LEVEL_NAV_ITEMS[appState.navigationState.currentTopLevelKey]
+                if (destination != null) {
                     NiaTopAppBar(
                         titleRes = destination.titleTextId,
                         navigationIcon = NiaIcons.Search,
@@ -250,36 +273,9 @@ internal fun NiaApp(
                     )
                 }
 
-                Box(
-                    // Workaround for https://issuetracker.google.com/338478720
-                    modifier = Modifier.consumeWindowInsets(
-                        if (shouldShowTopAppBar) {
-                            WindowInsets.safeDrawing.only(WindowInsetsSides.Top)
-                        } else {
-                            WindowInsets(0, 0, 0, 0)
-                        },
-                    ),
-                ) {
-                    val listDetailStrategy = rememberListDetailSceneStrategy<NavKey>()
-
-                    val entryProvider = entryProvider {
-                        forYouEntry(navigator)
-                        bookmarksEntry(navigator)
-                        interestsEntry(navigator)
-                        topicEntry(navigator)
-                        searchEntry(navigator)
-                        newsEntry(navigator)
-                    }
-
-                    NavDisplay(
-                        entries = appState.navigationState.toEntries(entryProvider),
-                        sceneStrategy = listDetailStrategy,
-                        onBack = { navigator.goBack() },
-                    )
+                Box(modifier = Modifier.weight(1f)) {
+                    content()
                 }
-
-                // TODO: We may want to add padding or spacer when the snackbar is shown so that
-                //  content doesn't display behind it.
             }
         }
     }
