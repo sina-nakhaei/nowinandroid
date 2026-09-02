@@ -24,9 +24,11 @@ import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -215,7 +217,10 @@ internal fun NiaApp(
                     .windowInsetsPadding(
                         WindowInsets.safeDrawing.only(
                             WindowInsetsSides.Horizontal,
-                        ),
+                        )
+                    )
+                    .windowInsetsPadding(WindowInsets.ime.exclude(WindowInsets.navigationBars).exclude(
+                        WindowInsets.systemBars),
                     ),
             ) {
                 // Only show the top app bar on top level destinations.
